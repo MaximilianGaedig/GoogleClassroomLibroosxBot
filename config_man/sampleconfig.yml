@@ -1,0 +1,10 @@
+google:
+  email: "student2137@school.edu"
+  passwd: "aaaaaaaa"
+librus:
+  email: "paul.jumper@gmail.com"
+  passwd: "aaaaaaaa"
+chrome:
+  args:
+    - 'user-data-dir=./profile'
+    - '--window-size=1800,800'
