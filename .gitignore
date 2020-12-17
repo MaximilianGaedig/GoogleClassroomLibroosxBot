@@ -4,3 +4,6 @@
 /.keychain
 
 .idea/
+.profile/
+/chromedriver.exe
+*.pyc
