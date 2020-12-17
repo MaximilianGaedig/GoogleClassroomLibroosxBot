@@ -9,10 +9,4 @@ for a in default_config.chrome_args:
 for e in default_config.chrome_exp:
     options.add_experimental_option(**e)
 
-# options.add_argument("start-minimized")
-# options.add_argument("use-fake-ui-for-media-stream")
-# options.add_experimental_option('useAutomationExtension', False)
-# options.add_experimental_option("excludeSwitches", ["enable-automation"])
-# options.add_argument("user-data-dir=./profile")
-
 driver = webdriver.Chrome(options=options)

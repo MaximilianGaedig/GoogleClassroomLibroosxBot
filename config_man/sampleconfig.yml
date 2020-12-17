@@ -1,6 +1,7 @@
 google:
   email: "student2137@school.edu"
   passwd: "aaaaaaaa"
+  perform_auto_login: no
 librus:
   email: "paul.jumper@gmail.com"
   passwd: "aaaaaaaa"
@@ -9,7 +10,7 @@ chrome:
     - 'user-data-dir=./profile'
     - '--window-size=1800,800'
   experimental:
-    # - name: useAutomationExtension
-    #   value: False
-    # - name: excludeSwitches
-    #   value: ['enable-automation']
+    - name: useAutomationExtension
+      value: False
+    - name: excludeSwitches
+      value: ['enable-automation']
