@@ -7,3 +7,5 @@
 .profile/
 /chromedriver.exe
 *.pyc
+
+profile/
