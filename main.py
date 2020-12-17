@@ -124,51 +124,52 @@ def join_classroom(lesson):
                 log(f"Waiting for class {classroom} to start...")
 
 
-# If you want to log in again change logged_in to False in the config.yml
-config = yaml.safe_load(open("config.yml", encoding='utf-8'))
-client = asyncio.run(librus_login())
-if not config['logged_in']:
-    driver = webdriver.Chrome(options=driver_options)
-    classroom_login(driver)
-    oauth_running = True
-    while oauth_running:
-        time.sleep(1)
+if __name__ == '__main__':
+    # If you want to log in again change logged_in to False in the config.yml
+    config = yaml.safe_load(open("config.yml", encoding='utf-8'))
+    client = asyncio.run(librus_login())
+    if not config['logged_in']:
+        driver = webdriver.Chrome(options=driver_options)
+        classroom_login(driver)
+        oauth_running = True
+        while oauth_running:
+            time.sleep(1)
+            try:
+                cancel_oauth = driver.find_element_by_xpath(
+                    '//*[@id="submit_deny_access"]/div/button/div[2]').click()
+                oauth_running = False
+                log('Logged in')
+                config['logged_in'] = True
+                with open('config.yml', 'w', encoding='utf-8') as f:
+                    documents = yaml.dump(config, f, allow_unicode=True)
+            except NoSuchElementException:
+                pass
+        driver.close()
+    if config['classroom'] is None:
+        config['classroom'] = asyncio.run(librus_check_for_subjects(client))
+        for i in config:
+            print(i)
+        with open('config.yml', 'w', encoding='utf-8') as f:
+            documents = yaml.dump(config, f, allow_unicode=True)
+        print("set the classroom names manually")
+        exit()
+    active_lesson_old = None
+    while True:
+        print('running')
         try:
-            cancel_oauth = driver.find_element_by_xpath(
-                '//*[@id="submit_deny_access"]/div/button/div[2]').click()
-            oauth_running = False
-            log('Logged in')
-            config['logged_in'] = True
-            with open('config.yml', 'w', encoding='utf-8') as f:
-                documents = yaml.dump(config, f, allow_unicode=True)
-        except NoSuchElementException:
+            tt = asyncio.run(fetch_timetable(client))
+        except RuntimeError:
             pass
-    driver.close()
-if config['classroom'] is None:
-    config['classroom'] = asyncio.run(librus_check_for_subjects(client))
-    for i in config:
-        print(i)
-    with open('config.yml', 'w', encoding='utf-8') as f:
-        documents = yaml.dump(config, f, allow_unicode=True)
-    print("set the classroom names manually")
-    exit()
-active_lesson_old = None
-while True:
-    print('running')
-    try:
-        tt = asyncio.run(fetch_timetable(client))
-    except RuntimeError:
-        pass
-    today_datetime = datetime.now()
-    today_date = today_datetime.date()
-    active_lesson = tuple(
-        filter(lambda x: x.hour_end > today_datetime.time() > x.hour_start,
-               tt.auto.get(today_date.strftime('%Y-%m-%d'))))
-    print(active_lesson)
-    if active_lesson != active_lesson_old:
-        if active_lesson != ():
-            print(active_lesson[0].subject.name)
-            # Starting classroom
-            join_classroom(active_lesson[0].subject.name)
-    active_lesson_old = active_lesson
-    time.sleep(20)
+        today_datetime = datetime.now()
+        today_date = today_datetime.date()
+        active_lesson = tuple(
+            filter(lambda x: x.hour_end > today_datetime.time() > x.hour_start,
+                   tt.auto.get(today_date.strftime('%Y-%m-%d'))))
+        print(active_lesson)
+        if active_lesson != active_lesson_old:
+            if active_lesson != ():
+                print(active_lesson[0].subject.name)
+                # Starting classroom
+                join_classroom(active_lesson[0].subject.name)
+        active_lesson_old = active_lesson
+        time.sleep(20)
