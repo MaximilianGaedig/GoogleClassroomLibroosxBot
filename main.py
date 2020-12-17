@@ -12,7 +12,7 @@ from datetime import datetime
 from libroosx.synergia.mappings import SynSubject
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
@@ -74,51 +74,53 @@ async def librus_check_for_subjects(client):
 
 def join_classroom(lesson):
     classroom = config['classroom'][lesson]
-    try:
-        element = WebDriverWait(driver, 10).until(
-            expected_conditions.presence_of_element_located((By.LINK_TEXT, classroom))
-        )
-        log(f"Class {classroom} found")
-        element.click()
-    except NoSuchElementException:
-        log(f"Class {classroom} not found")
-    try:
-        link = WebDriverWait(driver, 10).until(
-            expected_conditions.presence_of_element_located(
-                (By.XPATH, '//*[@id="yDmH0d"]/div[2]/div[2]/div[1]/div/div[2]/div[2]/div/span/a/div'))).text
-        log(f"Link found: {link}")
-        driver.get(link)
-    except NoSuchElementException:
-        log("Link not found")
-    loading = True
-    while loading:
+    if classroom != '':
+        driver = webdriver.Chrome(options=driver_options)
+        driver.get('https://classroom.google.com')
+        time.sleep(5)
         try:
-            reload_button = WebDriverWait(driver, 1).until(
+            element = WebDriverWait(driver, 10).until(
+                expected_conditions.presence_of_element_located((By.PARTIAL_LINK_TEXT, classroom))
+            )
+            log(f"Class {classroom} found")
+            element.click()
+        except TimeoutException:
+            log(f"Class {classroom} not found")
+        try:
+            link = WebDriverWait(driver, 10).until(
                 expected_conditions.presence_of_element_located(
-                    (By.XPATH, '//*[@id="yDmH0d"]/c-wiz/div/div[2]/div[3]/div[1]/button/div[2]')))
-            driver.refresh()
-            log("Reloading")
-        except selenium.common.exceptions.TimeoutException:
-            log(f"Loaded {classroom}")
-            loading = False
-    starting = True
-    camera_button = driver.find_element_by_xpath(
-        '//*[@id="yDmH0d"]/c-wiz/div/div/div[8]/div[3]/div/div/div[2]/div/div[1]/div[1]/div[1]/div/div[4]/div['
-        '2]/div/div').click()
+                    (By.XPATH, '//*[@id="yDmH0d"]/div[2]/div[2]/div[1]/div/div[2]/div[2]/div/span/a/div'))).text
+            log(f"Link found: {link}")
+            driver.get(link)
+        except TimeoutException:
+            log("Link not found")
+        loading = True
+        while loading:
+            try:
+                reload_button = WebDriverWait(driver, 1).until(
+                    expected_conditions.presence_of_element_located(
+                        (By.XPATH, '//*[@id="yDmH0d"]/c-wiz/div/div[2]/div[3]/div[1]/button/div[2]')))
+                driver.refresh()
+                log("Reloading")
+            except selenium.common.exceptions.TimeoutException:
+                log(f"Loaded {classroom}")
+                loading = False
+        starting = True
+        camera_button = driver.find_element_by_xpath(
+            '//*[@id="yDmH0d"]/c-wiz/div/div/div[8]/div[3]/div/div/div[2]/div/div[1]/div[1]/div[1]/div/div[4]/div[2]/div/div').click()
 
-    mic_button = driver.find_element_by_xpath(
-        '//*[@id="yDmH0d"]/c-wiz/div/div/div[8]/div[3]/div/div/div[2]/div/div[1]/div[1]/div[1]/div/div[4]/div['
-        '1]/div/div/div').click()
-    while starting:
-        try:
-            enter_meeting_button = driver.find_element_by_xpath(
-                '//*[@id="yDmH0d"]/c-wiz/div/div/div[8]/div[3]/div/div/div[2]/div/div[1]/div[2]/div/div[2]/div/div['
-                '1]/div[1]/span/span').click()
-            starting = False
-            log(f"Class {classroom} has started")
+        mic_button = driver.find_element_by_xpath(
+            '//*[@id="yDmH0d"]/c-wiz/div/div/div[8]/div[3]/div/div/div[2]/div/div[1]/div[1]/div[1]/div/div[4]/div[1]/div/div/div').click()
+        while starting:
+            try:
+                enter_meeting_button = driver.find_element_by_xpath(
+                    '//*[@id="yDmH0d"]/c-wiz/div/div/div[8]/div[3]/div/div/div[2]/div/div[1]/div[2]/div/div[2]/div/div['
+                    '1]/div[1]/span/span').click()
+                starting = False
+                log(f"Class {classroom} has started")
 
-        except NoSuchElementException:
-            log(f"Waiting for class {classroom} to start...")
+            except NoSuchElementException:
+                log(f"Waiting for class {classroom} to start...")
 
 
 # If you want to log in again change logged_in to False in the config.yml
@@ -166,8 +168,6 @@ while True:
         if active_lesson != ():
             print(active_lesson[0].subject.name)
             # Starting classroom
-            driver = webdriver.Chrome(options=driver_options)
-            driver.get('https://classroom.google.com')
             join_classroom(active_lesson[0].subject.name)
     active_lesson_old = active_lesson
     time.sleep(20)
