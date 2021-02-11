@@ -2,3 +2,5 @@
 /config.yml
 /bot.log
 /.keychain
+/config.yml.bckup
+/gui_test.py
