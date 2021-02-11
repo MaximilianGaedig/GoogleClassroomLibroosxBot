@@ -1,0 +1,18 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[[source]]
+name = "kypi"
+url = "https://kypi.kpostek.dev/simple"
+verify_ssl = true
+
+[packages]
+gTTS = "*"
+selenium = "*"
+playsound = "*"
+libroosx = "*"
+PyYAML = "*"
+
+[dev-packages]

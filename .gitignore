@@ -2,5 +2,8 @@
 /config.yml
 /bot.log
 /.keychain
-/config.yml.bckup
-/gui_test.py
+.idea/
+.profile/
+/chromedriver.exe
+*.pyc
+profile/
