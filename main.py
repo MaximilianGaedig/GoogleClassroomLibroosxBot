@@ -285,9 +285,20 @@ if __name__ == '__main__':
                             tt.auto.get(today_date.strftime("%Y-%m-%d")),
                         )
                     )
+                    # TODO: add overrides
                 except AttributeError:
                     pass
                     active_lesson = None
+                if lesson_running:
+                    try:
+                        if driver.get_log('driver')[-1]['message'] == close_msg:
+                            print('Browser window closed by user')
+                            lesson_running = False
+                    except IndexError:
+                        pass
+                    except UnboundLocalError:
+                        print('Browser window closed by user')
+                        lesson_running = False
                 if lesson_running:
                     try:
                         member_count = int(
@@ -311,10 +322,9 @@ if __name__ == '__main__':
                     except (
                             selenium.common.exceptions.TimeoutException,
                             ValueError,
-                            UnboundLocalError
+                            UnboundLocalError,
+                            AttributeError
                     ):
-                        pass
-                    except AttributeError:
                         pass
                 if active_lesson != active_lesson_old:
                     if active_lesson != () and active_lesson is not None:
@@ -335,9 +345,7 @@ if __name__ == '__main__':
 
                 if active_lesson is not None:
                     active_lesson_old = active_lesson
-
                 time.sleep(config["wait_time"])
+                time.sleep(1)
             await client.close()
     asyncio.run(main())
-    # bot.loop.create_task(main())
-    # bot.run(config['token'])
