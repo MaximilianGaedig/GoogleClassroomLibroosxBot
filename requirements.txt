@@ -4,8 +4,6 @@ certifi==2020.12.5
 chardet==4.0.0
 chromedriver-autoinstaller==0.2.2
 click==7.1.2
-Django
-django-scheduler==0.9.3
 fake-useragent==0.1.11
 gTTS
 h11==0.12.0
